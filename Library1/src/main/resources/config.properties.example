@@ -1,0 +1,25 @@
+# Database Configuration
+db.url=jdbc:postgresql://localhost:5432/library_db
+db.username=postgres
+db.password=your_password_here
+db.driver=org.postgresql.Driver
+db.pool.size=10
+
+# Email Configuration for OTP
+email.smtp.host=smtp.gmail.com
+email.smtp.port=587
+email.smtp.username=your_email@gmail.com
+email.smtp.password=your_app_password_here
+email.smtp.auth=true
+email.smtp.starttls.enable=true
+email.from=your_email@gmail.com
+email.from.name=Library Management System
+
+# OTP Configuration
+otp.length=6
+otp.expiry.minutes=10
+
+# Application Configuration
+app.name=Library Management System
+app.issue.period.days=14
+app.penalty.per.day=5
