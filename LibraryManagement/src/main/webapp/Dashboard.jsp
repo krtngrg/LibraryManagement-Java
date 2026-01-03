@@ -1,52 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" isELIgnored="false" %>
 
-<h2><%= session.getAttribute("SessionWelcome")%></h2>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard | Library Management System</title>
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5dc;
-            background-image: url('bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-
-        .overlay {
-            background-color: rgba(245, 245, 220, 0.9);
-            min-height: 100vh;
-        }
-
-        /* Navbar */
-        .navbar {
-            background-color: #4b5320;
-            padding: 15px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar h1 {
-            color: white;
-            margin: 0;
-        }
-
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            font-size: 16px;
-        }
-
-        .navbar a:hover {
-            text-decoration: underline;
-        }
 
         /* Dashboard Content */
         .dashboard {
@@ -116,17 +75,7 @@
 </head>
 <body>
 
-<div class="overlay">
-
-    <!-- Navbar -->
-    <div class="navbar">
-        <h1>Library System</h1>
-        <div>
-            <a href="Dashboard.jsp">Dashboard</a>
-            <a href="user?action=profile">Profile</a>
-            <a href="user?action=logout">Logout</a>
-        </div>
-    </div>
+<jsp:include page="dash_header.jsp" />
 
     <!-- Dashboard Section -->
     <div class="dashboard">
@@ -135,19 +84,19 @@
             <div class="card">
                 <h3>Manage Books</h3>
                 <p>Add, update, or remove books from the library.</p>
-                <a href="books">Go</a>
+                <a href="book?action=view">Go</a>
             </div>
 
             <div class="card">
                 <h3>Members</h3>
                 <p>View and manage registered library members.</p>
-                <a href="members">Go</a>
+                <a href="book?action=reader">Go</a>
             </div>
 
             <div class="card">
                 <h3>Issue Books</h3>
                 <p>Issue books and track borrowed records.</p>
-                <a href="issue">Go</a>
+                <a href="book?action=issue">Go</a>
             </div>
 
             <div class="card">
@@ -165,13 +114,5 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        &copy; 2025 Library Management System
-    </footer>
-
-</div>
-
-</body>
-</html>
+<jsp:include page="footer.jsp" />
 

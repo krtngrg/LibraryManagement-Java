@@ -25,9 +25,8 @@
 
 <h2>Add New Reader</h2>
 
-<form action="members" method="post">
-    <input type="hidden" name="action" value="add">
-
+<form action="book?action=reader" method="post">
+    <input type="hidden" name="edit" value="add">
     Name: <input type="text" name="name" required><br><br>
     Email: <input type="email" name="email" required><br><br>
     Phone: <input type="text" name="phone"><br><br>
@@ -65,8 +64,8 @@
         <td><%= r.getAddress() %></td>
         <td><%= r.getCreatedAt() %></td>
         <td>
-            <form action="members" method="post" style="display:inline;">
-                <input type="hidden" name="action" value="delete">
+            <form action="book?action=reader" method="post" style="display:inline;">
+                <input type="hidden" name="edit" value="delete">
                 <input type="hidden" name="user_id" value="<%= r.getUserId() %>">
                 <button type="submit" onclick="return confirm('Delete this member?')">Delete</button>
             </form>

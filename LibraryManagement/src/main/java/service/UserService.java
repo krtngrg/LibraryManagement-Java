@@ -51,7 +51,8 @@ public class UserService {
         UserDto user = getUserByEmail(email);
         if (user == null) {
             System.out.println("Invalid Email....");
-            throw new RuntimeException("Invalid Email.");
+//            throw new RuntimeException("Invalid Email.");
+            return null;
         }
 //        if (!user.getStatus().equalsIgnoreCase(String.valueOf(UserStatus.VERIFIED))) {
 //            System.out.println("Email verification pending.");
@@ -61,7 +62,8 @@ public class UserService {
         if (isValidUser) {
             return user;
         } else {
-            throw new RuntimeException("Incorrect password.");
+            return null;
+//            throw new RuntimeException("Incorrect password.");
         }
 
     }

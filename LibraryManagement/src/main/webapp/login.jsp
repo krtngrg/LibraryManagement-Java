@@ -17,9 +17,13 @@
         .login-box {
             background: white;
             padding: 30px;
-            width: 300px;
+            width: 320px;
             box-shadow: 0 0 10px gray;
         }
+
+        form{
+          padding-right: 20px;
+          }
 
         h2 { text-align: center; color: #4b5320; }
 
@@ -66,6 +70,12 @@
             width: 300px;
             box-shadow: 0 0 10px gray;
         }
+
+        #home{
+        position:absolute;
+        bottom:50px;
+        left:50px;
+        }
     </style>
 </head>
 
@@ -78,6 +88,8 @@
         <h2>Login</h2>
       <input type="text" name="email" placeholder="Email">
           <input type="password" name="password" placeholder="Password">
+          <br>
+          <br>
        <button>Login</button>
            <a href="user_signup.jsp">Not registered? Click here to sign up</a>
     </form>
@@ -91,11 +103,12 @@
     <div class="popup-content">
         <h3>Email Not Verified</h3>
         <p>Please verify your email before logging in.</p>
-        <a href="user?action=resendVerification">Go to Verification</a>
+        <a href="user?action=verify">Go to Verification</a>
         <br><br>
         <button onclick="closePopup()">Close</button>
     </div>
 </div>
+
 
 
 
@@ -111,5 +124,6 @@
     <% } %>
 </script>
 
+<a id="home" href="index.jsp">&#11013; Back to Home</a>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <%@ page import="java.util.*" %>
 <%@ page import="dto.Reader" %>
 <%@ page import="dto.IssuedBookView" %>
-<%@ page import="controller.Book" %>
+<%@ page import="dto.Book" %>
 
 <!DOCTYPE html>
 <html>
@@ -19,7 +19,7 @@
 
 <h2>Issue a Book</h2>
 
-<form action="issue" method="post">
+<form action="book?action=issue" method="post">
     Reader:
     <select name="userId" required>
         <option value="">Select Reader</option>

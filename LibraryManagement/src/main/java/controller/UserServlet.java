@@ -1,8 +1,10 @@
 package controller;
 
 import dto.UserDto;
+import mailservice.EmailOTPService;
 import model.UserModel;
 import service.UserService;
+import util.OTPGenerator;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -26,7 +28,7 @@ public class UserServlet extends HttpServlet {
 
         if (action.equalsIgnoreCase("profile")) {
             HttpSession session = req.getSession();
-            String uid = (String) session.getAttribute("uid");
+            String uid = String.valueOf((int) session.getAttribute("uid"));
             UserDto userDto = userService.getUserById(uid);
 //            userDto.setPassword(null); // password front end ma kaile pani janu hudaina
             req.setAttribute("userDto", userDto);
@@ -40,9 +42,11 @@ public class UserServlet extends HttpServlet {
         } else if (action.equalsIgnoreCase("signup")) {
             RequestDispatcher requestDispatcher = req.getRequestDispatcher("user_signup.jsp");
             requestDispatcher.forward(req, res);
+        } else if (action.equalsIgnoreCase("verify")) {
+            RequestDispatcher requestDispatcher = req.getRequestDispatcher("verification.jsp");
+            requestDispatcher.forward(req, res);
         }
     }
-
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         String action = req.getParameter("action");
 
@@ -67,47 +71,70 @@ public class UserServlet extends HttpServlet {
             if (found) {
                 RequestDispatcher requestDispatcher = req.getRequestDispatcher("login.jsp");
                 requestDispatcher.forward(req, res);
+            }else{
+//                req.setAttribute("success","OTP sent. Please use it within 5 minutes.");
+                req.setAttribute("error","Invalid OTP");
+                RequestDispatcher requestDispatcher = req.getRequestDispatcher("verification.jsp");
+                requestDispatcher.forward(req, res);
+            }
+
+        }
+
+        if (action.equalsIgnoreCase("resendOtp")) {
+            String email = req.getParameter("email");
+            UserDto foundUser = userService.getUserByEmail(email);
+            if (foundUser != null) {
+                try {
+                    String otp = OTPGenerator.generateOtp();
+                    foundUser.setOtp(otp);
+                    userModel.createUserOtp(foundUser);             // save otp to database
+                    EmailOTPService.sendOTP(foundUser.getEmail(), otp);
+                    req.setAttribute("otpsuccess","OTP sent. Please use it within 5 minutes.");
+                    RequestDispatcher requestDispatcher = req.getRequestDispatcher("verification.jsp");
+                    requestDispatcher.forward(req, res);
+
+                } catch (Exception e) {
+                    req.setAttribute("otperror","Something went wrong!");//send otp to email
+                    RequestDispatcher requestDispatcher = req.getRequestDispatcher("verification.jsp");
+                    requestDispatcher.forward(req, res);
+                }
             }
 
         }
 
         if (action.equalsIgnoreCase("login")) {
-            String welcome = "Welcome to the dashboard! User";
 
-//            session.setMaxInactiveInterval(1); seconds parameter
             String email = req.getParameter("email");
             String password = req.getParameter("password");
 
             UserDto foundUser = userService.login(email, password);
-            if(!foundUser.getStatus().equals("VERIFIED")){
-                HttpSession session = req.getSession();
-                String notverified="true";
-                session.setAttribute("notVerified",notverified);
+
+            if (foundUser == null) {
+                req.setAttribute("error", "Invalid email or password");
+                RequestDispatcher rd = req.getRequestDispatcher("login.jsp");
+                rd.forward(req, res);
                 return;
             }
-            if (foundUser != null) {
-                HttpSession session = req.getSession();
-                String uid = Integer.toString(foundUser.getId());
-                boolean login = true;
-//                String name = foundUser.getFirstname();
-//                session.setAttribute("SessionFirstName",foundUser.getFirstname());
-//                session.setAttribute("SessionLastName",foundUser.getLastname());
-//                session.setAttribute("SessionEmail",foundUser.getEmail());
-//                session.setAttribute("SessionPassword",foundUser.getPassword());
-                session.setAttribute("SessionLogin", login);
-                session.setAttribute("uid", uid);
-                req.setAttribute("user", foundUser);
-                RequestDispatcher requestDispatcher = req.getRequestDispatcher("Dashboard.jsp");
-                requestDispatcher.forward(req, res);
 
+            if (!"VERIFIED".equals(foundUser.getStatus())) {
+                req.setAttribute("notVerified", true);
+                RequestDispatcher rd = req.getRequestDispatcher("login.jsp");
+                rd.forward(req, res);
+                return;
             }
 
+            HttpSession session = req.getSession();
+            session.setAttribute("SessionLogin", true);
+            session.setAttribute("uid", foundUser.getId());
 
+            req.setAttribute("user", foundUser);
+            RequestDispatcher rd = req.getRequestDispatcher("Dashboard.jsp");
+            rd.forward(req, res);
         }
+
 
         if (action.equalsIgnoreCase("edit")) {
             String oldpassword = req.getParameter("currentPassword");
-
 
         }
 

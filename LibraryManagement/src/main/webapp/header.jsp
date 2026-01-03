@@ -12,6 +12,7 @@
     <div class="navbar">
         <h1>Library System</h1>
         <div>
+            <a href="index.jsp">Home</a>
             <a href="about.jsp">About Us</a>
             <a href="testimonials.jsp">Testimonials</a>
             <a href="login.jsp">Login</a>

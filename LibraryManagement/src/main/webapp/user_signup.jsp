@@ -4,8 +4,26 @@
 <html>
 <head>
     <title>Reader Signup</title>
-    <link rel="stylesheet" href="./form.css">
+
     <style>
+    body{
+
+          a {
+                text-decoration: none;
+                display: block;
+                text-align: center;
+                margin-top: 10px;
+                color: #4b5320;
+            }
+
+      margin: 0;
+                font-family: Arial, sans-serif;
+                background-color: #f5f5dc;
+                background-image: url("./images/bg.jpg");
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+    }
        .card{
             font-family: Arial;
             background-color: #f5f5dc;
@@ -59,10 +77,18 @@
             margin-top: 10px;
             color: #4b5320;
         }
+
+                #home{
+                position:absolute;
+                bottom:50px;
+                left:50px;
+                }
+
+
     </style>
 </head>
 
-<jsp:include page="header.jsp" />
+<body>
 <div class="card">
 <div class="signup-box">
     <h2>Librarian Signup</h2>
@@ -98,4 +124,10 @@
 </div>
 </div>
 
-<jsp:include page="footer.jsp" />
+<a id="home" href="index.jsp">&#11013; Back to Home</a>
+</body>
+</html>
+
+
+
+

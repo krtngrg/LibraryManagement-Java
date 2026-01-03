@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" isELIgnored="false" %>
 <%@ page import="java.util.List" %>
-<%@ page import="controller.Book" %>
+<%@ page import="dto.Book" %>
 
 <!DOCTYPE html>
 <html>
@@ -16,7 +16,7 @@
 <body>
 
 <h2>Add Book</h2>
-<form action="books" method="post">
+<form action="book?action=add" method="post">
     Title: <input type="text" name="title" required><br><br>
     Author: <input type="text" name="author" required><br><br>
     Category: <input type="text" name="category"><br><br>

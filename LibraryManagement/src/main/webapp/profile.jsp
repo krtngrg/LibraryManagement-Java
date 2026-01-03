@@ -94,16 +94,7 @@
 </script>
 </head>
 
-<body>
-
-<div class="navbar">
-    <strong>Library System</strong>
-    <div>
-        <a href="Dashboard.jsp">Dashboard</a>
-        <a href="profile?id=${id}">Profile</a>
-        <a href="logout">Logout</a>
-    </div>
-</div>
+<jsp:include page="dash_header.jsp" />
 
 <div class="container">
     <div class="card">
@@ -151,9 +142,4 @@
     </div>
 </div>
 
-<footer>
-    © 2025 Library Management System
-</footer>
-
-</body>
-</html>
+<jsp:include page="footer.jsp" />
