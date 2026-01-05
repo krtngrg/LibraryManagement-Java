@@ -1,204 +1,184 @@
 package model;
 
-import constants.UserStatus;
-import dto.UserDto;
+import dto.Book;
+import dto.IssuedBookView;
+import dto.Reader;
+// import model.DBConnection; // Not needed as it's in the same package
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookModel {
-    public UserDto createUser(UserDto userDto) {
-        UserDto createdUser = null;
 
-        String insertQuery = "INSERT INTO users (first_name, last_name, email, phone, address, password, status) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING user_id"; // PostgreSQL RETURNING
+    // --- Book Operations ---
 
-        try (Connection con = DBConnection.getConnection()) {
-            assert con != null;
-            PreparedStatement ps = con.prepareStatement(insertQuery);
+    public List<Book> getAllBooks() {
+        List<Book> books = new ArrayList<>();
+        try (Connection con = DBConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement("SELECT book_id, title, author, category FROM books");
+                ResultSet rs = ps.executeQuery()) {
 
-            ps.setString(1, userDto.getFirstname());
-            ps.setString(2, userDto.getLastname());
-            ps.setString(3, userDto.getEmail());
-            ps.setString(4, userDto.getPhone());
-            ps.setString(5, userDto.getAddress());
-
-            // Hash the password before saving
-            ps.setString(6, userDto.getPassword());
-
-            // Set initial status
-            ps.setString(7, UserStatus.CREATED.name());
-
-            // Execute and get generated ID
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                int userId = rs.getInt("user_id");
-
-                // Build returned object
-                createdUser = new UserDto();
-                createdUser.setId(userId);
-                createdUser.setFirstname(userDto.getFirstname());
-                createdUser.setLastname(userDto.getLastname());
-                createdUser.setEmail(userDto.getEmail());
-                createdUser.setPhone(userDto.getPhone());
-                createdUser.setAddress(userDto.getAddress());
-                createdUser.setPassword(userDto.getPassword());
-                createdUser.setStatus(String.valueOf(UserStatus.CREATED));
+            while (rs.next()) {
+                Book book = new Book();
+                book.setBookId(rs.getInt("book_id"));
+                book.setTitle(rs.getString("title"));
+                book.setAuthor(rs.getString("author"));
+                book.setCategory(rs.getString("category"));
+                books.add(book);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
-
-        return createdUser;
+        return books;
     }
 
-    public boolean createUserOtp(UserDto userDto) {
-        boolean execute = true;
-        String insertQuery = "update users set status=? where user_id=? ";
-        String insertOTP = "INSERT INTO user_otps (user_id, otp_code, purpose, expires_at) VALUES (?, ?, 'verify', NOW() + INTERVAL '5 minutes') ";
+    public boolean addBook(Book book) {
+        try (Connection con = DBConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO books (title, author, category) VALUES (?, ?, ?)")) {
 
-        try (Connection con = DBConnection.getConnection()) {
-
-            assert con != null;
-            PreparedStatement ps = con.prepareStatement(insertQuery);
-            ps.setString(1, String.valueOf(UserStatus.VERIFICATION_PENDING));
-            ps.setInt(2, userDto.getId());
-            ps.execute();
-
-            PreparedStatement ps2 = con.prepareStatement(insertOTP);
-            ps2.setInt(1, userDto.getId());
-            ps2.setString(2, userDto.getOtp());
-            ps2.execute();
-            System.out.println("Line2");
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getCategory());
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-        return execute;
     }
 
-    public UserDto getUserByEmail(String email) {
-        try (Connection con = DBConnection.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(
-                    "SELECT * FROM users WHERE email=?"
-            );
-            ps.setString(1, email);
+    // --- Reader Operations ---
 
-            ResultSet rs = ps.executeQuery();
+    public List<Reader> getAllReaders() {
+        List<Reader> readers = new ArrayList<>();
+        try (Connection con = DBConnection.getConnection();
+                PreparedStatement ps = con
+                        .prepareStatement("SELECT user_id, name, email, phone, address, created_at FROM readers");
+                ResultSet rs = ps.executeQuery()) {
 
-            if (rs.next()) {
-                UserDto res = new UserDto();
-                res.setId(rs.getInt("user_id"));
-                res.setEmail(rs.getString("email"));
-                res.setFirstname(rs.getString("first_name"));
-                res.setLastname(rs.getString("last_name"));
-                res.setPassword(rs.getString("password"));
-                res.setStatus(rs.getString("status"));
-
-                return res;
-
+            while (rs.next()) {
+                Reader r = new Reader();
+                r.setUserId(rs.getInt("user_id"));
+                r.setName(rs.getString("name"));
+                r.setEmail(rs.getString("email"));
+                r.setPhone(rs.getString("phone"));
+                r.setAddress(rs.getString("address"));
+                r.setCreatedAt(rs.getTimestamp("created_at"));
+                readers.add(r);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return null;
+        return readers;
     }
 
-    public UserDto getUserById(String id) {
-        int uid= Integer.parseInt(id);
-        try (Connection con = DBConnection.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(
-                    "SELECT * FROM users WHERE user_id=?"
-            );
-            ps.setInt(1, uid);
+    public boolean addReader(Reader reader, String password) {
+        try (Connection con = DBConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO readers (name, email, phone, address, password, created_at) VALUES (?, ?, ?, ?, ?, NOW())")) {
 
-            ResultSet rs = ps.executeQuery();
+            ps.setString(1, reader.getName());
+            ps.setString(2, reader.getEmail());
+            ps.setString(3, reader.getPhone());
+            ps.setString(4, reader.getAddress());
+            ps.setString(5, password); // TODO: Hash this password in future
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-            if (rs.next()) {
-                UserDto res = new UserDto();
-                res.setId(uid);
-                res.setEmail(rs.getString("email"));
-                res.setFirstname(rs.getString("first_name"));
-                res.setLastname(rs.getString("last_name"));
-//                res.setPassword(rs.getString("password"));
-                res.setStatus(rs.getString("status"));
-                return res;
+    public boolean deleteReader(int userId) {
+        try (Connection con = DBConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement("DELETE FROM readers WHERE user_id = ?")) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // --- Issue Operations ---
+
+    public List<IssuedBookView> getIssuedBooks() {
+        List<IssuedBookView> issuedBooks = new ArrayList<>();
+        String sql = "SELECT r.name AS reader_name, b.title AS book_title, " +
+                "ib.id, ib.issue_date, ib.due_date, ib.status, ib.return_date " +
+                "FROM issued_books ib " +
+                "JOIN readers r ON ib.user_id = r.user_id " +
+                "JOIN books b ON ib.book_id = b.book_id " +
+                "ORDER BY ib.issue_date DESC"; // Assuming 'id' is the PK of issued_books
+
+        try (Connection con = DBConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                // Assuming IssuedBookView has a constructor or setters match this
+                IssuedBookView ib = new IssuedBookView(
+                        rs.getString("reader_name"),
+                        rs.getString("book_title"),
+                        rs.getDate("issue_date"),
+                        rs.getDate("due_date"),
+                        rs.getString("status"));
+                // If IssuedBookView doesn't have ID or return_date, we might need to update
+                // DTO,
+                // but for now reusing existing DTO structure based on BookServlet usage.
+                issuedBooks.add(ib);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return null;
+        return issuedBooks;
     }
 
-
-    public boolean verifyOTP(String email, String otp, Timestamp verifyTime) {
-        boolean success = false;
-
-//        u.user_id, o.otp_id
-
-        String selectQuery =
-                "SELECT * " +
-                        "FROM users u " +
-                        "JOIN user_otps o ON u.user_id = o.user_id " +
-                        "WHERE u.email = ? " +
-                        "AND o.otp_code = ? " +
-                        "AND o.is_used = false " +
-                        "AND ? BETWEEN o.created_at AND o.expires_at";
-
-        String updateUserQuery =
-                "UPDATE users SET status = ? WHERE user_id = ?";
-
-        String updateOtpQuery =
-                "UPDATE user_otps SET is_used = true WHERE otp_id = ?";
+    public String issueBook(int userId, int bookId, Date dueDate) {
+        // 1. Check if book is already issued and not returned
+        // Assuming 1 copy per book_id.
 
         try (Connection con = DBConnection.getConnection()) {
-            if (con == null) return false;
 
-            con.setAutoCommit(false);
-
-            try (PreparedStatement ps = con.prepareStatement(selectQuery)) {
-                ps.setString(1, email);
-                ps.setString(2, otp);
-                ps.setTimestamp(3, verifyTime); // <-- passed date
-
-                ResultSet rs = ps.executeQuery();
-
-                if (rs.next()) {
-                    int userId = rs.getInt("user_id");
-                    int otpId = rs.getInt("otp_id");
-
-//                    Timestamp checktime = rs.getTimestamp("expires_at");
-//                    System.out.println("expiry Time"+checktime);
-//                    System.out.println("acutal time"+verifyTime);
-
-                    try (PreparedStatement psUser = con.prepareStatement(updateUserQuery)) {
-                        psUser.setString(1, UserStatus.VERIFIED.name());
-                        psUser.setInt(2, userId);
-                        psUser.executeUpdate();
-                    }
-
-                    try (PreparedStatement psOtp = con.prepareStatement(updateOtpQuery)) {
-                        psOtp.setInt(1, otpId);
-                        psOtp.executeUpdate();
-                    }
-
-                    con.commit();
-                    success = true;
+            // Check availability
+            String checkSql = "SELECT COUNT(*) FROM issued_books WHERE book_id = ? AND return_date IS NULL";
+            try (PreparedStatement startPs = con.prepareStatement(checkSql)) {
+                startPs.setInt(1, bookId);
+                ResultSet rs = startPs.executeQuery();
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return "Book is already issued to someone else.";
                 }
             }
 
+            // Issue
+            String insertSql = "INSERT INTO issued_books (user_id, book_id, due_date, issue_date, status) VALUES (?, ?, ?, CURRENT_DATE, 'ISSUED')";
+            try (PreparedStatement ps = con.prepareStatement(insertSql)) {
+                ps.setInt(1, userId);
+                ps.setInt(2, bookId);
+                ps.setDate(3, dueDate);
+                ps.executeUpdate();
+                return "success";
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
+            return "Error: " + e.getMessage();
         }
-
-        return success;
     }
 
-
+    public boolean returnBook(int issueId) {
+        try (Connection con = DBConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement(
+                        "UPDATE issued_books SET return_date = CURRENT_DATE, status = 'RETURNED' WHERE id=?")) { // Assuming
+                                                                                                                 // 'id'
+                                                                                                                 // column
+                                                                                                                 // exists
+            ps.setInt(1, issueId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

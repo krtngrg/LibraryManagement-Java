@@ -6,7 +6,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
 
 @WebServlet("/reports")
 public class ReportServlet extends HttpServlet {
@@ -21,8 +22,9 @@ public class ReportServlet extends HttpServlet {
             rs1.next();
             req.setAttribute("books", rs1.getInt(1));
 
+            // Fixed table name from 'members' to 'readers'
             ResultSet rs2 = con.createStatement()
-                    .executeQuery("SELECT COUNT(*) FROM members");
+                    .executeQuery("SELECT COUNT(*) FROM readers");
             rs2.next();
             req.setAttribute("members", rs2.getInt(1));
 
@@ -33,4 +35,3 @@ public class ReportServlet extends HttpServlet {
         req.getRequestDispatcher("report.jsp").forward(req, res);
     }
 }
-

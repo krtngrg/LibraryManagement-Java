@@ -10,6 +10,11 @@ public class UserDto {
     private String password;
     private String status;
     private String otp;
+     public String imagepath;
+
+    public String getProfilePicPath(){
+        return imagepath;
+    }
 
     public String getOtp() {
         return otp;

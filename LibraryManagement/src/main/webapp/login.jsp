@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" isELIgnored="false" %>
+<%@ page import="javax.servlet.http.Cookie" %>
 
 <!DOCTYPE html>
 <html>
@@ -86,10 +87,18 @@
 <div class="login-box">
     <form action="user?action=login" method="POST">
         <h2>Login</h2>
-      <input type="text" name="email" placeholder="Email">
+      <input type="text" name="email" placeholder="Email" value="<%
+       Cookie[] cookies = request.getCookies();
+       if (cookies != null) {
+       for (Cookie c : cookies) {
+       if (c.getName().equals("email")) {
+       out.print(c.getValue());
+       }
+       }
+       }
+       %>"/>
           <input type="password" name="password" placeholder="Password">
-          <br>
-          <br>
+          Remember Me: <input type="checkbox" name="remember" style="width: fit-content;"/><br><br>
        <button>Login</button>
            <a href="user_signup.jsp">Not registered? Click here to sign up</a>
     </form>

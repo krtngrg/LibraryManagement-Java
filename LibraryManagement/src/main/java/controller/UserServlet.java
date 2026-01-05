@@ -1,6 +1,8 @@
 package controller;
 
 import dto.UserDto;
+import dto.UserProfile;
+import jakarta.mail.Session;
 import mailservice.EmailOTPService;
 import model.UserModel;
 import service.UserService;
@@ -8,18 +10,24 @@ import util.OTPGenerator;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 1, // 1MB
+        maxFileSize = 1024 * 1024 * 5,       // 5MB
+        maxRequestSize = 1024 * 1024 * 10    // 10MB
+)
 
 @WebServlet("/user")
 public class UserServlet extends HttpServlet {
     private final UserModel userModel = new UserModel();
     private final UserService userService = new UserService();
+
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -30,8 +38,11 @@ public class UserServlet extends HttpServlet {
             HttpSession session = req.getSession();
             String uid = String.valueOf((int) session.getAttribute("uid"));
             UserDto userDto = userService.getUserById(uid);
+            String imgpath = userModel.getUserProfilePath(uid);
+            userDto.imagepath = imgpath;
 //            userDto.setPassword(null); // password front end ma kaile pani janu hudaina
             req.setAttribute("userDto", userDto);
+            req.setAttribute("photo",imgpath);
             RequestDispatcher requestDispatcher = req.getRequestDispatcher("profile.jsp");
             requestDispatcher.forward(req, res);
         } else if (action.equalsIgnoreCase("logout")) {
@@ -106,6 +117,7 @@ public class UserServlet extends HttpServlet {
 
             String email = req.getParameter("email");
             String password = req.getParameter("password");
+            String remember = req.getParameter("remember");
 
             UserDto foundUser = userService.login(email, password);
 
@@ -116,12 +128,24 @@ public class UserServlet extends HttpServlet {
                 return;
             }
 
+            if ("on".equals(remember)) {
+                Cookie userCookie = new Cookie("email", email);
+                userCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+                res.addCookie(userCookie);
+            } else {
+                // Delete cookie if exists
+                Cookie userCookie = new Cookie("email", "");
+                userCookie.setMaxAge(0);
+                res.addCookie(userCookie);
+            }
+
             if (!"VERIFIED".equals(foundUser.getStatus())) {
                 req.setAttribute("notVerified", true);
                 RequestDispatcher rd = req.getRequestDispatcher("login.jsp");
                 rd.forward(req, res);
                 return;
             }
+
 
             HttpSession session = req.getSession();
             session.setAttribute("SessionLogin", true);
@@ -133,8 +157,35 @@ public class UserServlet extends HttpServlet {
         }
 
 
-        if (action.equalsIgnoreCase("edit")) {
-            String oldpassword = req.getParameter("currentPassword");
+        if (action.equalsIgnoreCase("profilepic")) {
+
+            Part filePart = req.getPart("profilePic");
+            String fileName = filePart.getSubmittedFileName();
+
+
+            String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
+
+            String filePath = uploadPath + File.separator + fileName;
+            filePart.write(filePath);
+
+            req.setAttribute("photo", "uploads/"+ fileName);
+            req.setAttribute("photoPath",filePath);
+
+            HttpSession session = req.getSession();
+            String uid = String.valueOf((int) session.getAttribute("uid"));
+//            UserDto userDto = userService.getUserById(uid);
+            try {
+                userModel.saveUserProfile(uid,"uploads/"+ fileName);             // save otp to database
+                RequestDispatcher requestDispatcher = req.getRequestDispatcher("profile.jsp");
+                requestDispatcher.forward(req, res);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
 

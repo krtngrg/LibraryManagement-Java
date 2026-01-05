@@ -13,6 +13,8 @@
         table { border-collapse: collapse; width: 90%; }
         th, td { border: 1px solid #ccc; padding: 8px; }
         th { background: #f2f2f2; }
+
+
     </style>
 </head>
 <body>
@@ -27,7 +29,7 @@
             for (Object r : (List<?>)request.getAttribute("readers")) {
                 Reader reader = (Reader) r;
         %>
-        <option value="<%= reader.id %>"><%= reader.name %></option>
+        <option value="<%= reader.getUserId() %>"><%= reader.getName() %></option>
         <% } %>
     </select>
 

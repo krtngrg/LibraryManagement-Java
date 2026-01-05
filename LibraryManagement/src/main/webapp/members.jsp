@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.List" %>
-<%@ page import="controller.Reader" %>
+<%@ page import="dto.Reader" %>
 
 <!DOCTYPE html>
 <html>

@@ -1,4 +1,4 @@
-import model.DBConnection;
+import model.BookModel;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -6,10 +6,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.*;
 
 @WebServlet("/return")
 public class ReturnServlet extends HttpServlet {
+
+    private final BookModel bookModel = new BookModel();
 
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
@@ -22,22 +23,16 @@ public class ReturnServlet extends HttpServlet {
 
         int issueId = Integer.parseInt(req.getParameter("issueId"));
         int daysLate = Integer.parseInt(req.getParameter("days"));
-
         int fine = daysLate > 5 ? (daysLate - 5) * 10 : 0;
 
-        try (Connection con = DBConnection.getConnection()) {
+        boolean success = bookModel.returnBook(issueId);
 
-            PreparedStatement ps = con.prepareStatement(
-                    "UPDATE issued_books SET return_date = CURRENT_DATE WHERE id=?");
-            ps.setInt(1, issueId);
-            ps.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (success) {
+            req.setAttribute("result", "Returned. Fine: ₹" + fine);
+        } else {
+            req.setAttribute("result", "Error Returning Book.");
         }
 
-        req.setAttribute("result", "Returned. Fine: ₹" + fine);
         req.getRequestDispatcher("return.jsp").forward(req, res);
     }
 }
-

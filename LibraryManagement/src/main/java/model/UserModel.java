@@ -200,5 +200,50 @@ public class UserModel {
         return success;
     }
 
+    public boolean saveUserProfile(String id,String path){
+        boolean flag=true;
+
+//        String insertQuery = "update users set status=? where user_id=? ";
+        String insertQuery = "INSERT INTO user_profile_images (user_id, image_path, uploaded_at) VALUES (?, ?, NOW()) ";
+
+        try (Connection con = DBConnection.getConnection()) {
+            assert con != null;
+
+            int uid= Integer.parseInt(id);
+            PreparedStatement ps = con.prepareStatement(insertQuery);
+            ps.setInt(1, uid);
+            ps.setString(2, path);
+            ps.execute();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return flag;
+    }
+
+    public String getUserProfilePath(String id){
+//        String insertQuery = "update users set status=? where user_id=? ";
+        String selectQuery = "SELECT * FROM user_profile_images WHERE user_id=?";
+
+        try (Connection con = DBConnection.getConnection()) {
+            assert con != null;
+
+            int uid= Integer.parseInt(id);
+            PreparedStatement ps = con.prepareStatement(selectQuery);
+            ps.setInt(1, uid);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()){
+                String path= rs.getString("image_path");
+                return path;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
 }
