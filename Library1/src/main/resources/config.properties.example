@@ -1,5 +1,5 @@
 # Database Configuration
-db.url=jdbc:postgresql://localhost:5432/library_db
+db.url=jdbc:postgresql://localhost:5432/library_db_1
 db.username=postgres
 db.password=your_password_here
 db.driver=org.postgresql.Driver
