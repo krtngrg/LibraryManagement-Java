@@ -1,0 +1,1 @@
+This is a simple library management system built with java and PostgreSQL. It comprises of two users (admin and librarian). This system allows user to issue books and reserve books with push email notification activated when the book period is expired or when reserved book becomes available.
